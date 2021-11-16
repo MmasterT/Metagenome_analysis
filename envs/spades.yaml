@@ -1,0 +1,36 @@
+name: spades
+channels:
+  - ursky
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=1_gnu
+  - _sysroot_linux-64_curr_repodata_hack=3=h5bd9786_12
+  - bzip2=1.0.8=h7f98852_4
+  - ca-certificates=2021.5.30=ha878542_0
+  - kernel-headers_linux-64=3.10.0=h4a8ded7_12
+  - ld_impl_linux-64=2.36.1=hea4e1c9_2
+  - libffi=3.4.2=h9c3ff4c_1
+  - libgcc-ng=11.2.0=h1d223b6_8
+  - libgomp=11.2.0=h1d223b6_8
+  - libstdcxx-ng=11.2.0=he4da1e4_8
+  - llvm-openmp=8.0.1=hc9558a2_0
+  - ncurses=6.2=h58526e2_4
+  - openmp=8.0.1=0
+  - openssl=1.1.1l=h7f98852_0
+  - pip=21.2.4=pyhd8ed1ab_0
+  - python=3.9.7=hb7a2778_1_cpython
+  - python_abi=3.9=2_cp39
+  - readline=8.1=h46c0cb4_0
+  - setuptools=58.0.4=py39hf3d152e_0
+  - spades=3.15.3=h95f258a_0
+  - sqlite=3.36.0=h9cd32fc_1
+  - sysroot_linux-64=2.17=h4a8ded7_12
+  - tk=8.6.11=h27826a3_1
+  - tzdata=2021a=he74cb21_1
+  - wheel=0.37.0=pyhd8ed1ab_1
+  - xz=5.2.5=h516909a_1
+  - zlib=1.2.11=h516909a_1010
+
