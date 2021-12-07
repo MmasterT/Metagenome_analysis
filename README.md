@@ -17,6 +17,7 @@ For more information of SnakeMake use the oficial documentation: https://snakema
 
 The configuration of parameters is via the config.json file in the folder with thees parameters. It is ***very important*** to not change the left side of the : but the rigth side. Always the changes are between the quotes. The first thing it is to change the workdir to the directory path of the file where 
 
+```{p Carga de Datos, echo = True}
 {
         "workdir": "/u02/Mofedi/MAG_retrive_60genomas/", #path of the directory with all the files
         "t5" : "10", #amount of bases to cut from 5'
@@ -54,3 +55,4 @@ The configuration of parameters is via the config.json file in the folder with t
         "vamv_preload" : "",
         "assembler_method" : "concated" #assembler suports concated reads method and single sample method. 
 }
+```
