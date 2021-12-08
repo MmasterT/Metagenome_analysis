@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Oct 31 12:34:42 2021
-
-@author: Maria
-"""
 
 #runs in snakemake version 5.8.2
 
 import os
 #Set location of the configfile.
 
-configfile: "/u02/Mofedi/storage/workflow_test/config.json"
+configfile: "/u02/Mofedi/Test/config.json"
 #Set the snakefile working directory.
 
 wordkir: config["workdir"]
