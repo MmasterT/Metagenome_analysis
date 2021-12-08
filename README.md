@@ -15,7 +15,7 @@ For more information of SnakeMake use the oficial documentation: https://snakema
 
 ## Configuration
 
-The configuration of parameters is via the config.json file in the folder with thees parameters. It is ***very important*** to not change the left side of the : but the rigth side. Always the changes are between the quotes. The first thing it is to change the workdir to the directory path of the file where 
+The configuration of parameters is via the config.json file in the folder with thees parameters. It is ***very important*** to not change the left side of the : but the rigth side. Always the changes are between the quotes. The first thing it is to change the workdir to the directory path of the file where.
 
 ```{p Carga de Datos, echo = True}
 {
@@ -56,3 +56,4 @@ The configuration of parameters is via the config.json file in the folder with t
         "assembler_method" : "concated" #assembler suports concated reads method and single sample method. 
 }
 ```
+For the pipeline to work you have te change in all the .py files the path from the configfile variable to the path to your config.json file.
