@@ -24,9 +24,6 @@ file_names = [f for f in os.listdir(os.path.join(config["workdir"], "data/raw_re
               if os.path.isfile(os.path.join(config["workdir"] + "/data/raw_reads", f))]
 
 
-
-#get the files and change the names and extension to get all the work done.
-
 #From the filename get the sample name
 
 for name in file_names:
@@ -64,13 +61,13 @@ subworkflow contig:
 
 rule all:
     input:
-        "drep/data_tables/Widb_all.csv"
+        "drep/data_tables/Widb.csv"
 
 rule drep:
     input:
         "done.txt"
     output:
-        "drep/data_tables/Widb_all.csv"
+        "drep/data_tables/Widb.csv"
     params:
         max_cont = config["max_contamination"], min_comp = config["min_completness"],
         sa = config ["sa"]
@@ -122,6 +119,8 @@ rule move_and_change_extension:
                     else:
                         continue
         shell("touch done.txt")
+        shell("rm -rf metabat")
+        shell("rm -rf maxbin")
         
 #runs metabat2
 rule metabat2:
@@ -138,7 +137,6 @@ rule metabat2:
         int(config["meta_threads"])
     shell:
         """
-        rm -rf metabat
         metabat -i {params.contigs} -t {threads} -a {input.abundance} -o metabat/bin_metabat_{wildcards.assembler} -m 2000
         """
 
@@ -157,7 +155,6 @@ rule maxbin2:
         "envs/maxbin.yaml"
     shell:
         """
-        rm -rf maxbin
         mkdir -p maxbin
         run_MaxBin.pl -contig {params.contigs} -out maxbin/bin_maxbin_{wildcards.assembler} -abund_list {input.abundance} -min_contig_length {params.mcl} -thread {threads}
         """
