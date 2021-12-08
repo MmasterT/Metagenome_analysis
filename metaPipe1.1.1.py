@@ -1,14 +1,10 @@
 ## -*- coding: utf-8 -*-
-"""
-Created on Sat Oct 23 18:27:41 2021
-
-@author: Maria
-"""
 
 import os
+import pandas as pd
 #Set location of the configfile.
 
-configfile: "/u02/Mofedi/storage/workflow_test/config.json"
+configfile: "/u02/Mofedi/Test/config.json"
 
 #Set the snakefile working directory. If not set the snakefile use the directory where it resides.
 
@@ -31,8 +27,6 @@ file_names = [f for f in os.listdir(os.path.join(config["workdir"], "data/raw_re
 
 #get the files and change the names and extension to get all the work done.
 
-###POR AHORA GENERA NOMBRES MAL PERO FUNCIONA ASI, HAY QUE PENSAR MEJOR COMO HACERLO O SI
-###DIRECTAMENTE CAMBIAR TODOS LOS NOMBRES
 #From the filename get the sample name
 
 for name in file_names:
@@ -54,7 +48,7 @@ SAMPLES = list(set(SAMPLES))
 
 subworkflow vamb:
     configfile:
-        "/u02/Mofedi/storage/workflow_test/config.json"
+        "/u02/Mofedi/Test/config.json"
     workdir:
         config['workdir']
     snakefile:
@@ -62,21 +56,21 @@ subworkflow vamb:
 
 subworkflow contig:
     configfile:
-        "/u02/Mofedi/storage/workflow_test/config.json"
+        "/u02/Mofedi/Test/config.json"
     workdir:
         config['workdir']
     snakefile:
-        "assembler.smk"
+        "assembler.1.1.smk.py"
 
 rule all:
     input:
-        "drep/dereplicate/Widb_all.csv"
+        "drep/data_tables/Widb_all.csv"
 
 rule drep:
     input:
         "done.txt"
     output:
-        "drep/dereplicate/Widb_all.csv"
+        "drep/data_tables/Widb_all.csv"
     params:
         max_cont = config["max_contamination"], min_comp = config["min_completness"],
         sa = config ["sa"]
@@ -103,8 +97,6 @@ rule move_and_change_extension:
     run:
         shell("mv maxbin/*.fasta genomes")
         
-        import os
-        
         directory = config['workdir'] #set directory
         final_dir = os.path.join(directory, "genomes")  #set the destination directory
         #get the path of the directory, the subdirectorys and all the file in it.
@@ -129,9 +121,6 @@ rule move_and_change_extension:
                         i += 1
                     else:
                         continue
-        shell("rm -r -f maxbin")
-        shell("rm -r -f metabat")
-        shell("rm -r -f vamb")
         shell("touch done.txt")
         
 #runs metabat2
@@ -149,7 +138,8 @@ rule metabat2:
         int(config["meta_threads"])
     shell:
         """
-        metabat -i {params.contigs} -t {threads} -a {input.abundance} -o metabat/bin_metabat_{wildcards.assembler}
+        rm -rf metabat
+        metabat -i {params.contigs} -t {threads} -a {input.abundance} -o metabat/bin_metabat_{wildcards.assembler} -m 2000
         """
 
 #runs maxbin2       
@@ -167,59 +157,48 @@ rule maxbin2:
         "envs/maxbin.yaml"
     shell:
         """
+        rm -rf maxbin
         mkdir -p maxbin
         run_MaxBin.pl -contig {params.contigs} -out maxbin/bin_maxbin_{wildcards.assembler} -abund_list {input.abundance} -min_contig_length {params.mcl} -thread {threads}
         """
 
 rule maxbin2_abundancepath:
-    input:
-        expand("abundance/{sample}_{assembler}_abund.jgi", sample = set(SAMPLES), assembler = ASSAMBLER)
+    input: 
+        path = expand("abundance/{num}_{{assembler}}_abund.tsv", num = list(range(len(SAMPLES))))
     output:
         "abundance/abund_{assembler}_maxbin_paths.txt"
-    params:
-        path = expand("abundance/{sample}_{{assembler}}_abund.jgi", sample = set(SAMPLES))
     shell:
         """
-        for i in {input}; do sed -i '1d' $i;done
-        readlink -f {params.path} > {output}
-        rm -r -f temp_{wildcards.assembler}.txt abundance/temp_{wildcards.assembler}.txt
+        readlink -f {input.path} > {output}
         """
-        
-rule maxbin2_abundance:
+
+
+rule sample_abundance:
+    input:
+        "abundance/jgi_abundance_{assembler}.tsv", "abundance/temp_{assembler}.tsv"
+    output:
+        "abundance/{num}_{assembler}_abund.tsv"
+    run:
+        df = pd.read_csv(config['workdir'] + '/' + str(input[0]), sep = "\t")
+        columns = df.columns.tolist()
+        for i in columns:
+            if i.endswith('var'):
+                df = df.drop(i, axis =1)
+            else:
+                continue
+        df.to_csv("abundance/jgi_abundance_nointra.tsv", index = False, sep = "\t")
+        for i in range(len(SAMPLES)):
+            shell("cut -f 1,"+ str((i+4)) + " abundance/jgi_abundance_nointra.tsv > abundance/" + str(i) + "_{wildcards.assembler}_abund.tsv")
+        shell("for i in abundance/*{wildcards.assembler}_abund*; do sed -i '1d' $i;done")
+
+rule general:
     input:
         "abundance/jgi_abundance_{assembler}.tsv"
     output:
-        "abundance/{sample}_{assembler}_abund.jgi"
-    run:
-        import pandas as pd
+        temp("abundance/temp_{assembler}.tsv")
+    shell:
+        "cut -f 1,2,3 {input} > {output}"
         
-        dataframe = pd.read_csv(config['workdir'] + '/' + str(input[0]), sep = "\t")
-        columns = dataframe.columns.tolist()
-        
-        for samp in set(SAMPLES):
-            
-            df = dataframe
-            
-            for i in columns:
-                if i.startswith(samp) == False:
-                    df = df.drop(i, axis =1)
-                elif i.startswith(samp) and i.endswith('var'):
-                    df = df.drop(i, axis =1)
-                else:
-                    continue
-            
-            for word in input[0].split("_"):
-                if word == "megahit.tsv":
-                    df.to_csv(config['workdir'] + '/abundance/' + samp + '_megahit.jgi', index = False, sep = "\t")
-                elif word == "spades.tsv":
-                    #df = df.tail(df.shape[0] -1)
-                    df.to_csv(config['workdir'] + '/abundance/' + samp + '_spades.jgi', index = False, sep = "\t")
-                else:
-                    continue
-        shell("cut -f 1 {input} > abundance/temp_{wildcards.assembler}.txt")
-        shell("paste abundance/temp_{wildcards.assembler}.txt abundance/{wildcards.sample}_{wildcards.assembler}.jgi > {output}")
-
-
 #Runs jgi and get abundance data
 rule jgi:
     input:
