@@ -1,12 +1,6 @@
 #!/usr/bin/env python
+configfile: "/u02/Mofedi/Test/config.json"
 
-subworkflow contig:
-    configfile:
-        "/u02/Mofedi/storage/workflow_test/config.json"
-    workdir:
-        config['workdir']
-    snakefile:
-        "assembler.smk"
 
 # set configurations
 ASSAMBLER = ["spades", "megahit"]
@@ -33,6 +27,7 @@ else:
     contig_list = "data/contigs_{assembler}_{sample}/contigs.fasta",
     pair_1 =  "data/procesed_reads/{{sample}}_{sense}_final.fastq"
 
+
 ## read in sample information ##
 SAMPLES = []
 
@@ -50,6 +45,13 @@ for name in file_names:
 SAMPLES =   list(set(SAMPLES))
 # read in list of per-sample assemblies
 
+subworkflow contig:
+    configfile:
+        "/u02/Mofedi/Test/config.json"
+    workdir:
+        config["workdir"]
+    snakefile:
+        "assembler.1.1.smk.py"
 
 ## start of snakemake rules ##
 # targets
