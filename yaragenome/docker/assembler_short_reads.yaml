@@ -1,0 +1,19 @@
+prefix: /opt/software/conda_env
+channels:
+        - defaults
+        - conda-forge
+        - r
+        - anaconda
+        - bioconda
+        - ursky
+dependencies:
+        - drep=3.4.3
+        - bowtie2=2.5.1
+        - maxbin2=2.2.7
+        - megahit=1.2.9
+        - metabat2=2.15
+        - samtools=1.15
+        - spades=3.15.5
+        - vamb=3.0.2
+        - seqkit=2.5.1
+        - pigz=2.6

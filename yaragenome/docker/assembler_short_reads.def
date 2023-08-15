@@ -1,0 +1,15 @@
+FROM mambaorg/micromamba:latest
+
+WORKDIR /opt/software
+
+COPY assembler_short_reads.yaml /opt/software/assembler_short_reads.yaml
+
+RUN     micromamba create -p /opt/software/conda_env \
+        -c defaults \
+        -c conda-forge \
+        -c bioconda \
+        -c ursky \
+        -y \
+        -f /opt/software/assembler_short_reads.yaml
+
+CMD ["conda","activate","/opt/software/conda_env"]

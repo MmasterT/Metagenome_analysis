@@ -1,0 +1,91 @@
+{
+    "__default__" :
+    {
+        "cores"     : 2,
+        "memory"    : 5000,
+        "resources" : "\"select[mem>25000] rusage[mem=25000] span[hosts=1]\"",
+        "name"      : "smk.{rule}",
+        "output"    : "logs/{rule}/smk_%j_%N.out",
+        "error"     : "logs/{rule}/smk_%j_%N.err",
+        "partition" : "ei-long,ei-cb,ei-medium",
+        "account"   : "olivera@nbi.ac.uk"
+    },
+    "hicup_run": {
+        "cores": 28,
+        "memory": 90000
+    },
+    "def": {
+        "cores": 4
+    },
+    "mapping_to_reference": {
+        "cores": 28,
+        "memory": 180000
+    },
+    "unique_unique": {
+        "cores": 16,
+        "memory": 120000
+    },
+    "pairtools_sort": {
+        "memory": 120000,
+        "cores": 16
+    },
+    "pairtools_dedup": {
+        "memory": 120000,
+        "cores": 16
+    },
+    "unsorted_bam": {
+        "memory": 120000,
+        "cores": 16
+    },
+    "sort_bam": {
+        "memory": 60000,
+        "cores": 8
+    },
+    "build_index": {
+        "memory": 160000,
+        "cores": 8
+    },
+    "uniquemapping_pretext": {
+        "memory": 30000,
+        "cores": 8
+    },
+    "multimapping_pretext": {
+        "memory": 160000,
+        "cores": 8
+    },
+    "merge_bam": {
+        "memory": 60000,
+        "cores": 8
+    },
+    "minimap2": {
+        "memory": 45000,
+        "cores": 8
+    },
+    "scaffold_yahs": {
+        "memory": 120000,
+        "cores": 8
+    },
+    "multimapping_pairtools": {
+        "memory": 120000,
+        "cores": 16 
+    },
+    "cooler_unique": {
+        "memory": 120000,
+        "cores": 16
+    },
+    "cooler_all": {
+        "memory": 100000,
+        "cores": 12
+    },
+    "mosdepth_coverage":{
+        "memory": 80000,
+        "cores": 12
+    },
+    "index_bam":{
+        "memory": 30000,
+        "cores": 8
+    },
+    "sort_and_compress_unique_pairs":{
+        "memory": 60000
+    }
+}

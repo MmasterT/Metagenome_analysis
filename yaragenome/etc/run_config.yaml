@@ -1,0 +1,44 @@
+#############################################
+# Input files to drive the pipeline
+#############################################
+
+# NOTES:
+# Path/to/readsForward1,2,3,4\n
+# Path/to/readsReverse1,2,3,4\n
+# Path/to/reference/genome.fasta\n
+# Organism_name (just for naming)\n
+# Path/to/long_reads,1,2,3 (only if --curation mode)
+samples_csv: /path/to/sample_information.csv
+ 
+# output folder name, NOT path
+output: ./output
+
+# output logs will be written to "logs" directory inside output folder
+logs: ./output/logs
+
+#####
+# END of input parameters
+#####
+
+
+
+#######################
+# source required tools and provide parameters
+# NOTE: below tools are required for the snakemake pipeline
+#######################
+
+source:
+  omni-c: " omni-c-20210720_a30d45f_CBG"
+  arima: " chic-1.4_CBG"
+  snakemake: " snakamake-7.12.1_CBG "
+  yahs: " yahs-1.2a.2_CBG "
+  seqtk: " seqtk-1.3_CBG "
+  cooler: " cooler-0.9.1_CBG "
+  pretext: " pretext-0.1.0_CBG  "
+  minimap2: " minimap2-2.22_CBG  "
+  mosdepth: " mosdepth-0.3.3_CBG "
+  tidk: " tidk-0.2.31_CBG "
+  fast_curation: " fast_curation_sanger-0.1.0_CBG "
+
+
+#####

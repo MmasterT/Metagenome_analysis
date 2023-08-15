@@ -3,20 +3,14 @@
 #runs in snakemake version 5.8.2
 
 import os
-#Set location of the configfile.
-
-configfile: "/u02/Mofedi/Test/config.json"
 #Set the snakefile working directory.
 
 wordkir: config["workdir"]
 
 #Create list with the wildcards to use.
 SAMPLES = []
-SENSE = ["1", "2"]
+SENSE = ["R1", "R2"]
 ASSAMBLER = ["spades", "megahit"]
-BINNER = ["metabat", "maxbin", "vamb"]
-EXTENSION = []
-VAMB = range(0,4)
 
 #Get the filename of te samples
 
@@ -59,8 +53,6 @@ if config['assembler_method'] == 'concated':
     out_megahit = "data/contigs_megahit/final.contigs.fa"
     outdir_megahit= "data/temp"
     finaldir_megahit = "data/contigs_megahit/"
-    move_1 = "data/contigs_megahit/final.contigs.fa"
-    move_2 = "data/contigs_megahit/contigs.fasta"
     all = "data/contigs_{assembler}/contigs.fasta"
 
 else:
@@ -73,7 +65,7 @@ else:
     finaldir_megahit = "data/contigs_megahit_{sample}/"
     move_1 = "data/contigs_megahit_{sample}/final.contigs.fa"
     move_2 = "data/contigs_megahit_{sample}/contigs.fasta"
-    all = "data/contigs_{assembler}_{sample}/contigs.fasta"
+    all = "data/contigs_{assembler}_{{sample}}/contigs.fasta"
 
 
 rule all:
@@ -98,20 +90,23 @@ rule megahit:
     output:
         out_megahit = out_megahit
     params:
-        outdir_megahit = outdir_megahit, finaldir_megahit = finaldir_megahit, walltime="86400", node = "2",
-        kmer = config["k-list"], mem = config["mega_mem"]
+        outdir_megahit = outdir_megahit,
+        finaldir_megahit = finaldir_megahit,
+        walltime="86400",
+        node = "2",
+        kmer = config["k-list"],
+        mem = config["mega_mem"]
     threads:
         int(config["megahit_threads"])
-    conda:
-        "envs/megahit.yaml"
-    shell:
-        """
+    shell:"""
         rm -r -f {params.outdir_megahit}
         touch {output.out_megahit}
-        megahit -1 {input.pair_1} -2 {input.pair_2} --k-list {params.kmer} -m {params.mem} -t {threads} -o {params.outdir_megahit}                                                                                                                                             
+        megahit -1 {input.pair_1} -2 {input.pair_2} \
+        --k-list {params.kmer} -m {params.mem} -t {threads} -o {params.outdir_megahit}                                                                                                                                             
         rm -r -f {params.finaldir_megahit}                                                                                                                             
         mv {params.outdir_megahit} {params.finaldir_megahit}                                                                                                                                   
         """
+
 #Runs metaSpades.      
 rule spades:
     input:
@@ -119,25 +114,19 @@ rule spades:
     output:
         out_spades = out_spades
     params:
-        outdir_spades = outdir_spades, walltime="86400", node = "1",
-        kmer = config["k-list"],mem = config["spades_mem"]
+        outdir_spades = outdir_spades,
+        walltime="86400",
+        node = "1",
+        kmer = config["k-list"],
+        mem = config["spades_mem"]
     threads:
         int(config["spades_threads"])
-    conda:
-        "envs/spades.yaml"
-    shell:
-        """
+    shell:"""
         rm -r -f {params.outdir_spades}
         spades.py --meta -1 {input.pair_1} -2 {input.pair_2} -t {threads} -m {params.mem} -k {params.kmer} -o {params.outdir_spades}
         """
-rule concat_pairs:
-    input:
-        expand("data/procesed_reads/{{sample}}_{sense}_final.fastq", sense = SENSE)        
-    output:
-        temp("data/procesed_reads/{sample}_merged_reads.fastq")
-    shell:
-        "cat {input} > {output}"
-
+        
+"""
 rule concat_sample:
     input:
         read_1 = expand("data/procesed_reads/{sample}_1_final.fastq", sample=set(SAMPLES)),
@@ -145,27 +134,29 @@ rule concat_sample:
     output:
         output_1 = "data/procesed_reads/reads_concatfoward.fastq",
         output_2 = "data/procesed_reads/reads_concatreverse.fastq"
-    shell:
-        "cat {input.read_1} > {output.output_1};"
-        "cat {input.read_2} > {output.output_2}"
-
-#Runs custom script. Filter the reads with the specifications of the config file. It checks
-#that all reads has its pair.
+    shell:"""
+        #cat {input.read_1} > {output.output_1}
+        """
+"""
 rule filter_reads:
     input:
-        fow_2 = "data/procesed_reads/{sample}_1trim.fastq",
-        rev_2 = "data/procesed_reads/{sample}_2trim.fastq"
+        reads = "data/procesed_reads/{sample}_{sense}.trim.fastq"
     output:
-        filter_1 = "data/procesed_reads/{sample}_1_final.fastq",
-        filter_2 = "data/procesed_reads/{sample}_2_final.fastq"
-    script:
-        "scripts/Q_Filter.4.py"
+        filter_2 = "data/procesed_reads/{sample}_{sense}.trim.filter.fastq.gz"
+    script:"""
+        seqtk+pigz seq -u  -Q {params.quality} {input.reads} > output
+        """
 
-#Runs custom script. Cut the reads with the specifications of the config.json file.
 rule trim:
     input:
-        fow_1 = "data/raw_reads/{sample}_{sense}.fastq"
+        reads = "data/raw_reads/{sample}_{sense}.fastq"
     output:
-        out_1 = temp("data/procesed_reads/{sample}_{sense}trim.fastq")
-    script:
-        "scripts/triming.py"
+        trim_reads = temp("data/procesed_reads/{sample}_{sense}.trim.fastq")
+        tch = ".trim.done"
+    params:
+        trailing = f"-d -{TRAILING_BASES}:-1",
+        leading = f"-d 1:{LEADING_BASES}"
+    script:"""
+        seqkit mutate {params.trailing} {input.reads} \
+        seqkit+pigz mutate {params.leading} > {output}
+        """
